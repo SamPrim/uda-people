@@ -18,8 +18,9 @@ jobs:
             cd frontend
             npm install
             npm run build
+            exit 1
       - slack/notify:
-          event: pass
+          event: fail
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -37,6 +38,8 @@ jobs:
             cd backend
             npm install
             npm run build
+      - slack/notify:
+          event: fail
       - save_cache:
           paths: [frontend/node_modules]
           key: backend-build
@@ -55,6 +58,8 @@ jobs:
             cd frontend
             npm install
             npm run test
+      - slack/notify:
+          event: fail
       - save_cache:
           paths: [frontend/node_modules]
           key: test-frontend-build
@@ -72,6 +77,8 @@ jobs:
             cd backend
             npm install
             npm run test
+      - slack/notify:
+          event: fail
       - save_cache:
           paths: [backend/node_modules]
           key: test-backend-build
@@ -90,6 +97,8 @@ jobs:
             npm install
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
+      - slack/notify:
+          event: fail
       - save_cache:
           paths: [frontend/node_modules]
           key: scan-frontend
@@ -109,6 +118,8 @@ jobs:
             npm audit fix --audit-level=critical --force
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
+      - slack/notify:
+          event: fail
       - save_cache:
           paths: [backend/node_modules]
           key: scan-backend
