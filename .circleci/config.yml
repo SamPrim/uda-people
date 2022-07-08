@@ -8,8 +8,7 @@ jobs:
       - checkout
       - run:
           name: build front-end project
-          command: |
-            cd frontend && npm install && npm run build
+          command: cd frontend && npm install && npm run build
 
   build-backend:
     docker:
@@ -17,8 +16,7 @@ jobs:
     steps:
       - checkout
       - run:build back-end project
-          command: |
-            cd backend && npm install && npm run build
+          command: cd backend && npm install && npm run build
 
 workflows:
   default:
