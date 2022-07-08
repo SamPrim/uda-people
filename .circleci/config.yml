@@ -39,6 +39,9 @@ jobs:
             cd frontend
             npm install
             npm run build
+      - slack/notify:
+          custom: 'Build passed'
+          event: pass
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
