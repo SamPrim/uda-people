@@ -7,7 +7,7 @@ jobs:
     steps:
       - run:
           name: change directory
-          command: cd frontend
+          command: cd ../frontend
       - run:
           name: install dependencies
           command: npm install
@@ -21,7 +21,7 @@ jobs:
     steps:
       - run:
           name: change directory
-          command: cd backend
+          command: cd ../backend
       - run:
           name: install dependencies of backend
           command: npm install
