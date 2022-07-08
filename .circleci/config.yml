@@ -7,7 +7,7 @@ jobs:
     steps:
       - run:
           name: change directory
-          command: cd ../frontend
+          command: pwd
       - run:
           name: install dependencies
           command: npm install
