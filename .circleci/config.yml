@@ -7,7 +7,7 @@ jobs:
     steps:
       - run:
           name: change directory
-          command: pwd
+          command: ls
       - run:
           name: install dependencies
           command: npm install
