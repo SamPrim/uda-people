@@ -27,8 +27,34 @@ jobs:
             npm run build
             exit 1
 
+  test-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run front-end test
+          command: |
+            cd frontend
+            npm install
+            npm run test
+
+  test-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run back-end test
+          command: |
+            cd backend
+            npm install
+            npm run test
+
 workflows:
   default:
     jobs:
       - build-frontend
       - build-backend
+      - test-frontend
+      - test-backend
