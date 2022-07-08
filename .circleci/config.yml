@@ -5,9 +5,10 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
+    - checkout
       - run:
           name: change directory
-          command: ls
+          command: cd frontend
       - run:
           name: install dependencies
           command: npm install
@@ -19,9 +20,10 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
+    - checkout
       - run:
           name: change directory
-          command: cd ../backend
+          command: cd backend
       - run:
           name: install dependencies of backend
           command: npm install
