@@ -7,29 +7,18 @@ jobs:
     steps:
       - checkout
       - run:
-          name: change directory
-          command: cd frontend
-      - run:
-          name: install dependencies
-          command: npm install
-      - run:
-          name: build projet
-          command: npm run build
+          name: build front-end project
+          command: |
+            cd frontend && npm install && npm run build
 
   build-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - run:
-          name: change directory
-          command: cd backend
-      - run:
-          name: install dependencies of backend
-          command: npm install
-      - run:
-          name: build projet
-          command: npm run build
+      - run:build back-end project
+          command: |
+            cd backend && npm install && npm run build
 
 workflows:
   default:
