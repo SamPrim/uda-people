@@ -23,7 +23,7 @@ jobs:
           name: change directory
           command: cd backend
       - run:
-          name: install dependencies
+          name: install dependencies of backend
           command: npm install
       - run:
           name: build projet
