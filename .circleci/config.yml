@@ -223,11 +223,19 @@ jobs:
 
   run-migrations:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.9-bullseye
     steps:
       - checkout
       - restore_cache:
           keys: [backend-build]
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update -y
+            apt-get install ansible -y
+            apt-get install awscli -y
+            apt-get install nodejs -y
+            apt-get install npm -y
       - run:
           name: Run migrations
           command: |
@@ -242,11 +250,11 @@ jobs:
             then
                 curl --insecure https://kvdb.io/38MB9yW4c1rBanS5NDdv4z/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
-      # - revert-migrations
-      # - destroy-environment:
-      #     to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-      # - destroy-environment:
-      #     to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations
+      - destroy-environment:
+          to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+      - destroy-environment:
+          to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
 
   deploy-frontend:
     docker:
@@ -311,6 +319,9 @@ jobs:
             npm i
             npm run build
             cd ..
+      - run:
+          name: Deploy artefact
+          command: |
             tar -C backend -czvf artifact.tar.gz .
             mkdir ~/project/.circleci/ansible/roles/deploy/files/
             cp artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
