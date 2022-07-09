@@ -6,10 +6,8 @@
     dest: ~/
 - name: "Extract Artifact"
   become: true
-  unarchive:
-    src: ~/artifact.tar.gz
-    dest: ~/
-    remote_src: True
+  shell: tar -xvzf ~/artifact.tar.gz
+  warn: false
 - name: "start server"
   become: true
   shell: |
