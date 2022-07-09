@@ -9,6 +9,7 @@
   unarchive:
     src: ~/artifact.tar.gz
     dest: ~/dist
+    remote_src: True
 - name: "start server"
   become: true
   shell: |
