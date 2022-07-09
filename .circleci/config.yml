@@ -266,7 +266,7 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            export BACKEND_URL=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --filter "Name=tag:project,Values=udapeople" --output text)
+            export BACKEND_IP=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --filter "Name=tag:project,Values=udapeople" --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -279,6 +279,45 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      - revert-migrations
+      - destroy-environment:
+          to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+      - destroy-environment:
+          to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" 
+
+  deploy-backend:
+    docker:
+      - image: python:3.9-bullseye
+    steps:
+      - checkout
+      - add_ssh_keys:
+          # You can get this ID in the section where you registered the SSH Key
+          fingerprints: ["ad:75:d1:ff:67:18:7e:07:58:a2:fd:50:27:c5:ad:0b"]
+      - attach_workspace:
+          at: ~/
+      # attach workspace
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update -y
+            apt-get install ansible -y
+            apt-get install awscli -y
+            apt-get install nodejs -y
+            apt-get install npm -y
+      - run:
+          name: Deploy backend
+          command: |
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            tar -C backend -czvf artifact.tar.gz .
+            mkdir ~/project/.circleci/ansible/roles/deploy/files/
+            cp artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
       - revert-migrations
       - destroy-environment:
           to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
