@@ -323,7 +323,7 @@ jobs:
       - run:
           name: compress backend
           command: |
-            tar -C /tmp/artifacts/backend -czvf artifact.tar.gz .
+            tar -C backend -czvf artifact.tar.gz .
       - run:
           name: Deploy artefact
           command: |
