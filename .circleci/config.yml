@@ -176,10 +176,9 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.9-bullseye
     steps:
       - checkout
-      - run: yum install tar -y && yum install gzip -y
       - add_ssh_keys:
             # You can get this ID in the section where you registered the SSH Key
             fingerprints: ["ad:75:d1:ff:67:18:7e:07:58:a2:fd:50:27:c5:ad:0b"]
@@ -188,8 +187,10 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum install ansible -y
-            yum install awscli -y
+            apt-get update
+            apt-get install ansible -y
+            apt-get install awscli -y
+            
       - run:
           name: Configure server
           command: |
