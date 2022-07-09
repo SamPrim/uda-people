@@ -8,11 +8,12 @@
   become: true
   unarchive:
     src: ~/artifact.tar.gz
-    dest: ~/dist
+    dest: ~/backend
     remote_src: True
 - name: "start server"
   become: true
   shell: |
+    cd backend
     npm install
     pm2 stop default
     sudo pm2 start npm --start
