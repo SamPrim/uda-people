@@ -215,12 +215,14 @@ jobs:
           command: |
             cd backend
             npm install
-            npm run migrations > migrations_dump.txt
+            npm run migrations
       # - run:
-      #     name: Send migration results to memstash
+      #     name: Send migration results to kvdb
       #     command: |
-      #       # Your code here
-      #       exit 1
+      #       if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+      #       then
+      #           curl https://kvdb.io/38MB9yW4c1rBanS5NDdv4z/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+      #       fi
       # Here's where you will add some code to rollback on failure
 
 workflows:
