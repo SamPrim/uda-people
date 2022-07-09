@@ -12,6 +12,7 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
+            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
             aws cloudformation delete-stack --stack-name <<parameters.to>>
 
   revert-migrations:
@@ -320,11 +321,12 @@ jobs:
             npm run build
             cd ..
       - run:
+          name: compress backend
+          command: |
+            tar -C /tmp/artifacts/backend -czvf artifact.tar.gz .
+      - run:
           name: Deploy artefact
           command: |
-            tar -C backend -czvf artifact.tar.gz .
-            mkdir ~/project/.circleci/ansible/roles/deploy/files/
-            cp artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
