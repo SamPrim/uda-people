@@ -454,6 +454,9 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [scan-backend]
+          filters:
+            branches:
+              only: [master]
       - deploy-frontend:
           requires: [run-migrations]
       - deploy-backend:
