@@ -1,4 +1,4 @@
 URL01 =  https://github.com/SamPrim/uda-people
-URL02 = http://udapeople-13365b4.s3-website-us-east-1.amazonaws.com/
+URL02 = http://udapeople-8f83983.s3-website-us-east-1.amazonaws.com 
 
-URL04 = 3.95.167.246:3030
+URL04 = 44.204.69.207:3030
