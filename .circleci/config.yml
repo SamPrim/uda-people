@@ -15,8 +15,8 @@ commands:
             if aws s3 ls | grep udapeople-<<parameters.to>>; then
               aws s3 rm s3://udapeople-<<parameters.to>> --recursive
             fi
-            aws cloudformation delete-stack --stack-name frontend-<<parameters.to>>
-            aws cloudformation delete-stack --stack-name backend-<<parameters.to>>
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.to>>
+            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.to>>
       - revert-migrations:
           to: <<parameters.to>>
 
@@ -30,12 +30,7 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            status=$(curl -H "token: <<parameters.to>>" \
-              --request GET https://api.memstash.io/values/migration-<<parameters.to>>)
-            echo $status
-            if [[ "${status}" == 1 ]]; then
               npm run migrations:revert
-            fi
 
 orbs: 
   slack: circleci/slack@4.10.1
@@ -348,9 +343,9 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             if curl "${API_URL}/api/status" | grep "ok"
             then
-              return 0
+              exit 0
             else
-              return 1
+              exit 1
             fi
       - run:
           name: Frontend smoke test.
@@ -360,9 +355,9 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
                 # Change this to 0 after the job fails
-              return 1
+              exit 1
             else
-              recho 1
+              exit 1
             fi
       - destroy-environment:
           to: "${CIRCLE_WORKFLOW_ID}"
