@@ -12,25 +12,29 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-            aws cloudformation delete-stack --stack-name <<parameters.to>>
+            if aws s3 ls | grep udapeople-<<parameters.to>>; then
+              aws s3 rm s3://udapeople-<<parameters.to>> --recursive
+            fi
+            aws cloudformation delete-stack --stack-name frontend-<<parameters.to>>
+            aws cloudformation delete-stack --stack-name backend-<<parameters.to>>
+      - revert-migrations:
+          to: <<parameters.to>>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    # parameters:
-      # Add parameter here 
+    parameters:
+      to:
+        type: string
     steps:
       - run:
           name: Revert migrations
           when: on_fail
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            export SUCCESS=$(curl --insecure https://kvdb.io/38MB9yW4c1rBanS5NDdv4z/migration_${CIRCLE_WORKFLOW_ID:0:7})
-            if(( $SUCCESS==1 )); 
-            then
-             cd ~/project/backend
-             npm install
-             npm run migrations:revert
+            status=$(curl -H "token: <<parameters.to>>" \
+              --request GET https://api.memstash.io/values/migration-<<parameters.to>>)
+            echo $status
+            if [[ "${status}" == 1 ]]; then
+              npm run migrations:revert
             fi
 
 orbs: 
@@ -190,9 +194,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment:
-          to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-      - destroy-environment:
-          to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          to: "${CIRCLE_WORKFLOW_ID}"
 
   configure-infrastructure:
     docker:
@@ -218,9 +220,7 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment:
-          to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-      - destroy-environment:
-          to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          to: "${CIRCLE_WORKFLOW_ID}"
 
   run-migrations:
     docker:
@@ -251,11 +251,8 @@ jobs:
             then
                 curl --insecure https://kvdb.io/38MB9yW4c1rBanS5NDdv4z/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
-      - revert-migrations
       - destroy-environment:
-          to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-      - destroy-environment:
-          to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          to: "${CIRCLE_WORKFLOW_ID}"
 
   deploy-frontend:
     docker:
@@ -288,11 +285,8 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      - revert-migrations
       - destroy-environment:
-          to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-      - destroy-environment:
-          to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" 
+          to: "${CIRCLE_WORKFLOW_ID}"
 
   deploy-backend:
     docker:
@@ -332,11 +326,8 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
             ansible-playbook -i inventory.txt configure-prometheus-node-exporter.yml
-      - revert-migrations
       - destroy-environment:
-          to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-      - destroy-environment:
-          to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" 
+          to: "${CIRCLE_WORKFLOW_ID}"
 
   smoke-test:
     docker:
@@ -357,9 +348,9 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             if curl "${API_URL}/api/status" | grep "ok"
             then
-              echo "${API_URL}"
+              return 0
             else
-              echo lost
+              return 1
             fi
       - run:
           name: Frontend smoke test.
@@ -369,15 +360,12 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
                 # Change this to 0 after the job fails
-              echo success
+              return 1
             else
-              recho failed
+              recho 1
             fi
-      - revert-migrations
       - destroy-environment:
-          to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-      - destroy-environment:
-          to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" 
+          to: "${CIRCLE_WORKFLOW_ID}"
 
   cloudfront-update:
     docker:
@@ -397,11 +385,8 @@ jobs:
               --stack-name InitialStack \
               --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
-      - revert-migrations
       - destroy-environment:
-          to: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-      - destroy-environment:
-          to: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          to: "${CIRCLE_WORKFLOW_ID}"
 
   cleanup:
     docker:
