@@ -160,10 +160,15 @@ jobs:
 #infrastructure 
   deploy-infrastructure:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.9-bullseye
     steps:
       - checkout
-      - run: yum install tar -y && yum install gzip -y
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install ansible -y
+            apt-get install awscli -y
       - run:
           name: Ensure back-end infrastructure exists
           command: |
