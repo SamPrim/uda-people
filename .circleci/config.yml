@@ -8,6 +8,8 @@ commands:
         default: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
         type: string   
     steps:
+      - revert-migrations:
+          to: <<parameters.to>>
       - run:
           name: Destroy environments
           when: on_fail
@@ -17,8 +19,7 @@ commands:
             fi
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.to>>
             aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.to>>
-      - revert-migrations:
-          to: <<parameters.to>>
+      
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -189,7 +190,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment:
-          to: "${CIRCLE_WORKFLOW_ID}"
+          to: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   configure-infrastructure:
     docker:
@@ -215,7 +216,7 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment:
-          to: "${CIRCLE_WORKFLOW_ID}"
+          to: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   run-migrations:
     docker:
@@ -247,7 +248,7 @@ jobs:
                 curl --insecure https://kvdb.io/38MB9yW4c1rBanS5NDdv4z/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
       - destroy-environment:
-          to: "${CIRCLE_WORKFLOW_ID}"
+          to: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   deploy-frontend:
     docker:
@@ -281,7 +282,7 @@ jobs:
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - destroy-environment:
-          to: "${CIRCLE_WORKFLOW_ID}"
+          to: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   deploy-backend:
     docker:
@@ -322,7 +323,7 @@ jobs:
             ansible-playbook -i inventory.txt deploy-backend.yml
             ansible-playbook -i inventory.txt configure-prometheus-node-exporter.yml
       - destroy-environment:
-          to: "${CIRCLE_WORKFLOW_ID}"
+          to: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   smoke-test:
     docker:
@@ -360,7 +361,7 @@ jobs:
               exit 1
             fi
       - destroy-environment:
-          to: "${CIRCLE_WORKFLOW_ID}"
+          to: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   cloudfront-update:
     docker:
@@ -381,7 +382,7 @@ jobs:
               --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
       - destroy-environment:
-          to: "${CIRCLE_WORKFLOW_ID}"
+          to: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   cleanup:
     docker:
